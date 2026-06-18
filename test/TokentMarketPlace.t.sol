@@ -10,6 +10,8 @@ contract TokenMarketPlaceTest is Test {
     TokenMarketplace public tokenMarketplace;
     ERC20Mock public erc20Mock;
 
+    error TokenMarketplace_ZeroNumberOfTokens(uint256 numberOfTokens);
+
     function setUp() public {
         address owner = makeAddr("owner");
         erc20Mock = new ERC20Mock();
@@ -17,6 +19,7 @@ contract TokenMarketPlaceTest is Test {
         erc20Mock.mint(address(tokenMarketplace), 1000);
     }
 
+    //Happy Path Testing..
     function testBuyTokensFromMarketplace() public {
         //Arrange Phase
         uint256 tokensToBuyFromMarketplace = 2;
@@ -49,5 +52,15 @@ contract TokenMarketPlaceTest is Test {
             tokenBalanceOfBuyerAfterBuying - tokenBalanceOfBuyerBeforeBuying,
             tokensToBuyFromMarketplace
         );
+    }
+
+    //Sad Path Testing...
+    function test_RevertsWhenNumberOfTokensToBuyfromMarketplaceIsZero() public {
+        uint256 tokensToBuyFromMarketplace = 0;
+        address buyer = makeAddr("buyer");
+        vm.deal(buyer, 10 ether);
+        vm.prank(buyer);
+        vm.expectRevert(abi.encodeWithSelector(TokenMarketplace_ZeroNumberOfTokens.selector, tokensToBuyFromMarketplace));
+        tokenMarketplace.buyTokensFromMarketplace{value: 1 ether}(tokensToBuyFromMarketplace);
     }
 }
