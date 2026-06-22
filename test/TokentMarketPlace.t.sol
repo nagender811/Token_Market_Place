@@ -63,4 +63,35 @@ contract TokenMarketPlaceTest is Test {
         vm.expectRevert(abi.encodeWithSelector(TokenMarketplace_ZeroNumberOfTokens.selector, tokensToBuyFromMarketplace));
         tokenMarketplace.buyTokensFromMarketplace{value: 1 ether}(tokensToBuyFromMarketplace);
     }
+
+    //Fuzz Testing
+    function test_FuzzBuyTokensFromMarketplace(uint256 tokensToBuyFromMarketplace) public {
+        tokensToBuyFromMarketplace = bound(tokensToBuyFromMarketplace, 1, 1000);
+        uint256 tokenPrice = tokenMarketplace.TOKEN_PRICE();
+        uint256 totalPriceToPayToBuyTokens = tokensToBuyFromMarketplace *
+            tokenPrice;
+        uint256 tokenMarketplaceEthBalanceBefore = address(tokenMarketplace)
+            .balance;
+        address buyer = makeAddr("buyer");
+        vm.deal(buyer, totalPriceToPayToBuyTokens);
+        uint256 tokenBalanceOfBuyerBeforeBuying = erc20Mock.balanceOf(buyer);
+
+        vm.prank(buyer);
+        tokenMarketplace.buyTokensFromMarketplace{
+            value: totalPriceToPayToBuyTokens
+        }(tokensToBuyFromMarketplace);
+        uint256 tokenMarketplaceEthBalanceAfter = address(tokenMarketplace)
+            .balance;
+        uint256 tokenBalanceOfBuyerAfterBuying = erc20Mock.balanceOf(buyer);
+
+        assertEq(
+            tokenMarketplaceEthBalanceAfter - tokenMarketplaceEthBalanceBefore,
+            totalPriceToPayToBuyTokens
+        );
+        assertEq(
+            tokenBalanceOfBuyerAfterBuying - tokenBalanceOfBuyerBeforeBuying,
+            tokensToBuyFromMarketplace
+        );
+    }
+
 }
