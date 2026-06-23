@@ -30,4 +30,18 @@ contract MarketplaceHandler is Test {
 
         marketplaceTokensBought+=amount;
     }
+
+    function createSellOrder(uint256 amount) public {
+        uint256 sellerBalance = token.balanceOf(seller);
+        if (sellerBalance == 0) return;
+        
+        amount = bound(amount, 1, sellerBalance);
+
+        vm.startPrank(seller); 
+        token.approve(address(marketplace), amount);
+        marketplace.createSellOrder(amount);
+        vm.stopPrank();
+
+        openOrderTokens += amount;
+    }
 }
