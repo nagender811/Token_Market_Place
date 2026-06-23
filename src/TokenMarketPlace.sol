@@ -181,4 +181,8 @@ contract TokenMarketplace is Ownable,Pausable,ReentrancyGuard{
 
     }
 
+    function getAvailableMarketplaceTokens() external view returns(uint256) {
+        return slvToken.balanceOf(address(this));
+    }
+
 }
