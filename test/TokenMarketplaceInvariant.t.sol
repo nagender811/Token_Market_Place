@@ -25,8 +25,11 @@ contract TokenMarketplaceInvariantTest is StdInvariant, Test {
 
         handler = new MarketplaceHandler(token, marketplace);
 
-        bytes4[] memory selectors = new bytes4[](1);
+        bytes4[] memory selectors = new bytes4[](2);
+
         selectors[0] = MarketplaceHandler.buyFromMarketplace.selector;
+        selectors[1] = MarketplaceHandler.createSellOrder.selector;
+
         targetContract(address(handler));
         targetSelector(
             FuzzSelector({addr: address(handler), selectors: selectors})
@@ -39,5 +42,9 @@ contract TokenMarketplaceInvariantTest is StdInvariant, Test {
             handler.marketplaceTokensBought();
 
             assertEq(token.balanceOf(address(marketplace)), expectedBalance);
+    }
+
+    function invariant_marketplaceCanCoverOpenOrders() public view {
+        assertGe(token.balanceOf(address(marketplace)), handler.openOrderTokens());
     }
 }
