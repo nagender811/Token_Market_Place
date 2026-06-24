@@ -47,4 +47,22 @@ contract TokenMarketplaceInvariantTest is StdInvariant, Test {
     function invariant_marketplaceCanCoverOpenOrders() public view {
         assertGe(token.balanceOf(address(marketplace)), handler.openOrderTokens());
     }
+
+    function invariant_marketplaceEthBalanceFromDirectSales() public view {
+        assertEq(address(marketplace).balance, handler.marketplaceTokensBought() * 1 ether);
+    }
+
+     function invariant_ordersHaveConsistentActiveState() public view {
+        uint256 orderCount = marketplace.getNumberOfCreatedOrders();
+
+        for (uint256 i = 0; i < orderCount; i++) {
+            OrderInfo memory order = marketplace.getCreatedOrderById(i);
+
+            if (order.isActive) {
+                assertGt(order.numberOfTokensToSell, 0);
+            } else {
+                assertEq(order.numberOfTokensToSell, 0);
+            }
+        }
+    }
 }
