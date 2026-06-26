@@ -2,18 +2,17 @@
 pragma solidity ^0.8.13;
 
 import {Script} from "forge-std/Script.sol";
-import {TokenMarketplace} from "../src/Counter.sol";
+import {TokenMarketplace} from "../src/TokenMarketPlace.sol";
+import {HelperConfig} from "./HelperConfig.s.sol";
 
 contract TokenMarketplaceScript is Script {
-    TokenMarketplace public tokenMarketplace;
-
-    function setUp() public {}
-
     function run() public {
+        HelperConfig helperConfig = new HelperConfig();
+        HelperConfig.NetworkConfig memory config = helperConfig.getConfig();
+
         vm.startBroadcast();
-
-        tokenMarketplace = new TokenMarketplace();
-
+        TokenMarketplace tokenMarketplace = new TokenMarketplace(config.initialOwner, config.slvToken);
         vm.stopBroadcast();
     }
 }
+
