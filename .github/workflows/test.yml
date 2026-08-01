@@ -12,8 +12,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v7
 
-      - name: Foundary Toolchain
-        uses: foundary-rs/foundary-toolchain@v1
+      - name: Foundry Toolchain
+        uses: foundry-rs/foundry-toolchain@v1
       
       - name: Run Tests
         run: forge test --isolate -vvv
