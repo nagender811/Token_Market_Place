@@ -24,10 +24,8 @@ contract TokenMarketPlaceTest is Test {
         //Arrange Phase
         uint256 tokensToBuyFromMarketplace = 2;
         uint256 tokenPrice = tokenMarketplace.TOKEN_PRICE();
-        uint256 totalPriceToPayToBuyTokens = tokensToBuyFromMarketplace *
-            tokenPrice;
-        uint256 tokenMarketplaceEthBalanceBefore = address(tokenMarketplace)
-            .balance;
+        uint256 totalPriceToPayToBuyTokens = tokensToBuyFromMarketplace * tokenPrice;
+        uint256 tokenMarketplaceEthBalanceBefore = address(tokenMarketplace).balance;
         address buyer = makeAddr("buyer");
         vm.deal(buyer, 10 ether);
         uint256 tokenBalanceOfBuyerBeforeBuying = erc20Mock.balanceOf(buyer);
@@ -35,23 +33,14 @@ contract TokenMarketPlaceTest is Test {
 
         //Act Phase
         vm.prank(buyer);
-        tokenMarketplace.buyTokensFromMarketplace{
-            value: totalPriceToPayToBuyTokens
-        }(tokensToBuyFromMarketplace);
-        uint256 tokenMarketplaceEthBalanceAfter = address(tokenMarketplace)
-            .balance;
+        tokenMarketplace.buyTokensFromMarketplace{value: totalPriceToPayToBuyTokens}(tokensToBuyFromMarketplace);
+        uint256 tokenMarketplaceEthBalanceAfter = address(tokenMarketplace).balance;
         uint256 tokenBalanceOfBuyerAfterBuying = erc20Mock.balanceOf(buyer);
         // console.log(tokenMarketplaceEthBalanceAfter);
 
         //Assert Phase
-        assertEq(
-            tokenMarketplaceEthBalanceAfter - tokenMarketplaceEthBalanceBefore,
-            totalPriceToPayToBuyTokens
-        );
-        assertEq(
-            tokenBalanceOfBuyerAfterBuying - tokenBalanceOfBuyerBeforeBuying,
-            tokensToBuyFromMarketplace
-        );
+        assertEq(tokenMarketplaceEthBalanceAfter - tokenMarketplaceEthBalanceBefore, totalPriceToPayToBuyTokens);
+        assertEq(tokenBalanceOfBuyerAfterBuying - tokenBalanceOfBuyerBeforeBuying, tokensToBuyFromMarketplace);
     }
 
     //Sad Path Testing...
@@ -61,61 +50,40 @@ contract TokenMarketPlaceTest is Test {
         vm.deal(buyer, 10 ether);
         vm.prank(buyer);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                TokenMarketplace_ZeroNumberOfTokens.selector,
-                tokensToBuyFromMarketplace
-            )
+            abi.encodeWithSelector(TokenMarketplace_ZeroNumberOfTokens.selector, tokensToBuyFromMarketplace)
         );
-        tokenMarketplace.buyTokensFromMarketplace{value: 1 ether}(
-            tokensToBuyFromMarketplace
-        );
+        tokenMarketplace.buyTokensFromMarketplace{value: 1 ether}(tokensToBuyFromMarketplace);
     }
 
     //Fuzz Testing
-    function test_FuzzBuyTokensFromMarketplace(
-        uint256 tokensToBuyFromMarketplace
-    ) public {
+    function test_FuzzBuyTokensFromMarketplace(uint256 tokensToBuyFromMarketplace) public {
         tokensToBuyFromMarketplace = bound(tokensToBuyFromMarketplace, 1, 1000);
         uint256 tokenPrice = tokenMarketplace.TOKEN_PRICE();
-        uint256 totalPriceToPayToBuyTokens = tokensToBuyFromMarketplace *
-            tokenPrice;
-        uint256 tokenMarketplaceEthBalanceBefore = address(tokenMarketplace)
-            .balance;
+        uint256 totalPriceToPayToBuyTokens = tokensToBuyFromMarketplace * tokenPrice;
+        uint256 tokenMarketplaceEthBalanceBefore = address(tokenMarketplace).balance;
         address buyer = makeAddr("buyer");
         vm.deal(buyer, totalPriceToPayToBuyTokens);
         uint256 tokenBalanceOfBuyerBeforeBuying = erc20Mock.balanceOf(buyer);
 
         vm.prank(buyer);
-        tokenMarketplace.buyTokensFromMarketplace{
-            value: totalPriceToPayToBuyTokens
-        }(tokensToBuyFromMarketplace);
-        uint256 tokenMarketplaceEthBalanceAfter = address(tokenMarketplace)
-            .balance;
+        tokenMarketplace.buyTokensFromMarketplace{value: totalPriceToPayToBuyTokens}(tokensToBuyFromMarketplace);
+        uint256 tokenMarketplaceEthBalanceAfter = address(tokenMarketplace).balance;
         uint256 tokenBalanceOfBuyerAfterBuying = erc20Mock.balanceOf(buyer);
 
-        assertEq(
-            tokenMarketplaceEthBalanceAfter - tokenMarketplaceEthBalanceBefore,
-            totalPriceToPayToBuyTokens
-        );
-        assertEq(
-            tokenBalanceOfBuyerAfterBuying - tokenBalanceOfBuyerBeforeBuying,
-            tokensToBuyFromMarketplace
-        );
+        assertEq(tokenMarketplaceEthBalanceAfter - tokenMarketplaceEthBalanceBefore, totalPriceToPayToBuyTokens);
+        assertEq(tokenBalanceOfBuyerAfterBuying - tokenBalanceOfBuyerBeforeBuying, tokensToBuyFromMarketplace);
     }
 
     function testBuyTokensFromMarketplace_gas() public {
         uint256 tokensToBuyFromMarketplace = 2;
         uint256 tokenPrice = tokenMarketplace.TOKEN_PRICE();
-        uint256 totalPriceToPayToBuyTokens = tokensToBuyFromMarketplace *
-            tokenPrice;
+        uint256 totalPriceToPayToBuyTokens = tokensToBuyFromMarketplace * tokenPrice;
 
         address buyer = makeAddr("buyer");
         vm.deal(buyer, 10 ether);
 
         vm.prank(buyer);
-        tokenMarketplace.buyTokensFromMarketplace{
-            value: totalPriceToPayToBuyTokens
-        }(tokensToBuyFromMarketplace);
+        tokenMarketplace.buyTokensFromMarketplace{value: totalPriceToPayToBuyTokens}(tokensToBuyFromMarketplace);
 
         vm.snapshotGasLastCall("Buy Tokens From Marketplace");
     }

@@ -11,8 +11,7 @@ contract HelperConfig is Script {
     uint256 public constant ETH_MAINNET_CHAIN_ID = 1;
     uint256 public constant LOCAL_CHAIN_ID = 31337;
 
-    address public constant DEFAULT_ANVIL_ACCOUNT =
-        0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+    address public constant DEFAULT_ANVIL_ACCOUNT = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     struct NetworkConfig {
         address initialOwner;
@@ -25,9 +24,7 @@ contract HelperConfig is Script {
         return getConfigByChainId(block.chainid);
     }
 
-    function getConfigByChainId(
-        uint256 chainId
-    ) public returns (NetworkConfig memory) {
+    function getConfigByChainId(uint256 chainId) public returns (NetworkConfig memory) {
         if (chainId == ETH_SEPOLIA_CHAIN_ID) {
             return getEthConfig();
         }
@@ -47,8 +44,8 @@ contract HelperConfig is Script {
         return NetworkConfig({initialOwner: vm.envAddress("INITIAL_OWNER"), slvToken: vm.envAddress("SLV_TOKEN")});
     }
 
-    function getOrCreateAnvilConfig() public returns(NetworkConfig memory) {
-        if(localNetworkConfig.slvToken != address(0)) {
+    function getOrCreateAnvilConfig() public returns (NetworkConfig memory) {
+        if (localNetworkConfig.slvToken != address(0)) {
             return localNetworkConfig;
         }
 
@@ -57,8 +54,7 @@ contract HelperConfig is Script {
         vm.stopBroadcast();
 
         localNetworkConfig = NetworkConfig({
-            initialOwner: vm.envOr("INITIAL_OWNER", DEFAULT_ANVIL_ACCOUNT),
-            slvToken: address(slvToken)
+            initialOwner: vm.envOr("INITIAL_OWNER", DEFAULT_ANVIL_ACCOUNT), slvToken: address(slvToken)
         });
 
         return localNetworkConfig;

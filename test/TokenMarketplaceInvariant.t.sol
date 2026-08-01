@@ -31,17 +31,14 @@ contract TokenMarketplaceInvariantTest is StdInvariant, Test {
         selectors[1] = MarketplaceHandler.createSellOrder.selector;
 
         targetContract(address(handler));
-        targetSelector(
-            FuzzSelector({addr: address(handler), selectors: selectors})
-        );
+        targetSelector(FuzzSelector({addr: address(handler), selectors: selectors}));
     }
 
     function invariant_marketplaceTokenBalanceIsAccountedFor() public view {
-        uint256 expectedBalance = INITIAL_MARKETPLACE_TOKENS +
-            handler.openOrderTokens() -
-            handler.marketplaceTokensBought();
+        uint256 expectedBalance =
+            INITIAL_MARKETPLACE_TOKENS + handler.openOrderTokens() - handler.marketplaceTokensBought();
 
-            assertEq(token.balanceOf(address(marketplace)), expectedBalance);
+        assertEq(token.balanceOf(address(marketplace)), expectedBalance);
     }
 
     function invariant_marketplaceCanCoverOpenOrders() public view {
@@ -52,7 +49,7 @@ contract TokenMarketplaceInvariantTest is StdInvariant, Test {
         assertEq(address(marketplace).balance, handler.marketplaceTokensBought() * 1 ether);
     }
 
-     function invariant_ordersHaveConsistentActiveState() public view {
+    function invariant_ordersHaveConsistentActiveState() public view {
         uint256 orderCount = marketplace.getNumberOfCreatedOrders();
 
         for (uint256 i = 0; i < orderCount; i++) {
