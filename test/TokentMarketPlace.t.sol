@@ -60,12 +60,21 @@ contract TokenMarketPlaceTest is Test {
         address buyer = makeAddr("buyer");
         vm.deal(buyer, 10 ether);
         vm.prank(buyer);
-        vm.expectRevert(abi.encodeWithSelector(TokenMarketplace_ZeroNumberOfTokens.selector, tokensToBuyFromMarketplace));
-        tokenMarketplace.buyTokensFromMarketplace{value: 1 ether}(tokensToBuyFromMarketplace);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                TokenMarketplace_ZeroNumberOfTokens.selector,
+                tokensToBuyFromMarketplace
+            )
+        );
+        tokenMarketplace.buyTokensFromMarketplace{value: 1 ether}(
+            tokensToBuyFromMarketplace
+        );
     }
 
     //Fuzz Testing
-    function test_FuzzBuyTokensFromMarketplace(uint256 tokensToBuyFromMarketplace) public {
+    function test_FuzzBuyTokensFromMarketplace(
+        uint256 tokensToBuyFromMarketplace
+    ) public {
         tokensToBuyFromMarketplace = bound(tokensToBuyFromMarketplace, 1, 1000);
         uint256 tokenPrice = tokenMarketplace.TOKEN_PRICE();
         uint256 totalPriceToPayToBuyTokens = tokensToBuyFromMarketplace *
@@ -94,4 +103,20 @@ contract TokenMarketPlaceTest is Test {
         );
     }
 
+    function testBuyTokensFromMarketplace_gas() public {
+        uint256 tokensToBuyFromMarketplace = 2;
+        uint256 tokenPrice = tokenMarketplace.TOKEN_PRICE();
+        uint256 totalPriceToPayToBuyTokens = tokensToBuyFromMarketplace *
+            tokenPrice;
+
+        address buyer = makeAddr("buyer");
+        vm.deal(buyer, 10 ether);
+
+        vm.prank(buyer);
+        tokenMarketplace.buyTokensFromMarketplace{
+            value: totalPriceToPayToBuyTokens
+        }(tokensToBuyFromMarketplace);
+
+        vm.snapshotGasLastCall("Buy Tokens From Marketplace");
+    }
 }
