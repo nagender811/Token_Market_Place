@@ -13,7 +13,7 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
 
     uint256 public constant TOKEN_PRICE = 1 ether;
     uint256 private reseverdOrderedTokens;
-    IERC20 public immutable slvToken;
+    IERC20 public immutable SLV_TOKEN;
 
     mapping(uint256 => OrderInfo) private orders;
 
@@ -35,12 +35,12 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
 
     event BuyTokens(address indexed buyer, uint256 indexed numberOfTokensBought);
 
-    constructor(address _slvToken, address ownerAddress) Ownable(ownerAddress) {
-        slvToken = IERC20(_slvToken);
+    constructor(address slvToken, address ownerAddress) Ownable(ownerAddress) {
+        SLV_TOKEN = IERC20(slvToken);
     }
 
     function _getSlvTokenBalanceOfMarketPlace() internal view returns (uint256) {
-        return slvToken.balanceOf(address(this));
+        return SLV_TOKEN.balanceOf(address(this));
     }
 
     function _checkEthPayment(uint256 numberOfTokens) internal view {
@@ -62,12 +62,12 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
             revert TokenMarketplace_InsufficientTokenBalance(numberOfTokens, _getSlvTokenBalanceOfMarketPlace());
         }
         //from marketplace to the buyer address
-        slvToken.safeTransfer(msg.sender, numberOfTokens);
-        emit buyTokens(msg.sender, numberOfTokens);
+        SLV_TOKEN.safeTransfer(msg.sender, numberOfTokens);
+        emit BuyTokens(msg.sender, numberOfTokens);
     }
 
     function _checkSellerSlvTokenBalance(uint256 numberOfTokens) internal view {
-        uint256 balance = slvToken.balanceOf(msg.sender);
+        uint256 balance = SLV_TOKEN.balanceOf(msg.sender);
 
         if (numberOfTokens > balance) {
             revert TokenMarketplace_InsufficientBalance(balance, numberOfTokens);
@@ -77,7 +77,7 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
     function createSellOrder(uint256 numberOfTokensToSell) external {
         _isNumberOfTokensZero(numberOfTokensToSell);
         _checkSellerSlvTokenBalance(numberOfTokensToSell);
-        uint256 allowance = slvToken.allowance(msg.sender, address(this));
+        uint256 allowance = SLV_TOKEN.allowance(msg.sender, address(this));
 
         if (allowance < numberOfTokensToSell) {
             revert TokenMarketplace_InsufficientAllowance(allowance, numberOfTokensToSell);
@@ -87,7 +87,7 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
         });
         orders[nextOrderId] = order;
         nextOrderId++;
-        slvToken.safeTransferFrom(msg.sender, address(this), numberOfTokensToSell);
+        SLV_TOKEN.safeTransferFrom(msg.sender, address(this), numberOfTokensToSell);
         reseverdOrderedTokens += numberOfTokensToSell;
         orderList.push(order);
     }
@@ -123,7 +123,7 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
             order.isActive = false;
         }
         //token transfer from contract to the buyer account
-        slvToken.safeTransfer(msg.sender, numberOfTokensToBuy);
+        SLV_TOKEN.safeTransfer(msg.sender, numberOfTokensToBuy);
 
         //transfe eth from contract to the seller account
         (bool success,) = order.seller.call{value: msg.value}("");
@@ -143,7 +143,7 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
         //algorithm
         order.isActive = false;
         reseverdOrderedTokens -= order.numberOfTokensToSell;
-        slvToken.safeTransfer(order.seller, order.numberOfTokensToSell);
+        SLV_TOKEN.safeTransfer(order.seller, order.numberOfTokensToSell);
     }
 
     function getCreatedOrderById(uint256 orderId) external view returns (OrderInfo memory) {
@@ -179,6 +179,6 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
     receive() external payable {}
 
     function getAvailableMarketplaceTokens() external view returns (uint256) {
-        return slvToken.balanceOf(address(this));
+        return SLV_TOKEN.balanceOf(address(this));
     }
 }
