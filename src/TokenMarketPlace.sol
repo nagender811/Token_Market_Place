@@ -13,7 +13,7 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
 
     uint256 public constant TOKEN_PRICE = 1 ether;
     uint256 private reseverdOrderedTokens;
-    IERC20 public slvToken;
+    IERC20 public immutable slvToken;
 
     mapping(uint256 => OrderInfo) private orders;
 
@@ -33,9 +33,9 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
     error TokenMarketplace_UnauthorizedSeller(address caller, uint256 orderId);
     error TokenMarkeplace_InvalidOwner();
 
-    event buyTokens(address indexed buyer, uint256 indexed numberOfTokensBought);
+    event BuyTokens(address indexed buyer, uint256 indexed numberOfTokensBought);
 
-    constructor(address _slvToken, address _owner) Ownable(_owner) {
+    constructor(address _slvToken, address ownerAddress) Ownable(ownerAddress) {
         slvToken = IERC20(_slvToken);
     }
 
@@ -103,14 +103,14 @@ contract TokenMarketplace is Ownable, Pausable, ReentrancyGuard {
         }
     }
 
-    function buyTokensFromSellOrderCreated(uint256 orderId, uint256 numberOfTokensToBuy) external payable whenPaused {
+    function buyTokensFromSellOrderCreated(uint256 orderId, uint256 numberOfTokensToBuy) external payable whenNotPaused nonReentrant{
         _validateOrderId(orderId);
         _isNumberOfTokensZero(numberOfTokensToBuy);
         _checkEthPayment(numberOfTokensToBuy);
 
         OrderInfo storage order = orders[orderId];
 
-        if (order.isActive == false) {
+        if (!order.isActive) {
             revert TokenMarketplace_OrderIsNotActive(order.orderId);
         }
 
