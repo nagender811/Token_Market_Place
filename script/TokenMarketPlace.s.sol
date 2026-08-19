@@ -13,8 +13,8 @@ contract TokenMarketplaceScript is Script {
 
         vm.startBroadcast();
         TokenMarketplace tokenMarketplace = new TokenMarketplace(
-            config.initialOwner,
-            config.slvToken
+            config.slvToken,
+            config.initialOwner
         );
         vm.stopBroadcast();
         console2.log(
