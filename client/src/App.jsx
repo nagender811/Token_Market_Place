@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import abi from "../src/contractAbi/tokenMarketplaceAbi.json";
 
@@ -24,6 +24,16 @@ function App() {
       setAddress(addresses[0]);
     }
   }
+
+  useEffect(() => {
+    if(!contract) return;
+    async function getTokenPriceInEth() {
+      const tokenPrice = await contract.getTokenPrice();
+      console.log("Token Price:", tokenPrice);
+    }
+    getTokenPriceInEth();
+  }, [contract]);
+  
   return (
     <>
       <button onClick={connectWallet}>Connect Wallet</button>
