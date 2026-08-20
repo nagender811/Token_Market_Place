@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
-import { ethers } from "ethers";
-import abi from "../src/contractAbi/tokenMarketplaceAbi.json";
+import { useEffect, useState, useRef } from "react";
+import { ethers, formatEther } from "ethers";
+import abi from "./contractAbi/tokenMarketplaceAbi.json";
 
 function App() {
   const [address, setAddress] = useState("");
   const [contract, setContract] = useState("");
+  const [tokenPrice, setTokenPrice] = useState("");
+  const inputTokenRef = useRef(null);
 
   async function connectWallet() {
     if (!window.ethereum) {
@@ -16,7 +18,7 @@ function App() {
 
       const contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = provider.getSigner();
+      const signer = await provider.getSigner();
 
       const contract = new ethers.Contract(contractAddress, abi, signer);
 
@@ -26,18 +28,34 @@ function App() {
   }
 
   useEffect(() => {
-    if(!contract) return;
+    if (!contract) return;
     async function getTokenPriceInEth() {
-      const tokenPrice = await contract.getTokenPrice();
-      console.log("Token Price:", tokenPrice);
+      const tokenPriceInWei = await contract.getTokenPrice();
+      const tokenPriceInEth = ethers.formatEther(tokenPriceInWei);
+      setTokenPrice(tokenPriceInEth);
     }
     getTokenPriceInEth();
   }, [contract]);
-  
+
+  async function buyTokensFromMarketplace(e) {
+    e.preventDefault();
+    const numberOfTokens = inputTokenRef.current.value;
+    console.log(numberOfTokens);
+    const amount = numberOfTokens * tokenPrice;
+    await contract.buyTokensFromMarketplace(numberOfTokens, { value: amount });
+    alert("Tx Successful");
+  }
+
   return (
     <>
       <button onClick={connectWallet}>Connect Wallet</button>
       <p>Connected Address: {address}</p>
+      <p>Token Price(In Eth): {tokenPrice}</p>
+
+      <form onSubmit={buyTokensFromMarketplace}>
+        <input ref={inputTokenRef} placeholder="number of tokens"></input>
+        <button type="submit">Buy Tokens From MarketPlace</button>
+      </form>
     </>
   );
 }
