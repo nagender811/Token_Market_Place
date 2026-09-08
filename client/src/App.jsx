@@ -78,7 +78,6 @@ function App() {
       if (!contract) return;
       try {
         const numberOfCreatedOrders = await contract.getNumberOfCreatedOrders();
-        console.log("Number of Created Orders: ", numberOfCreatedOrders);
         setNumberOfCreatedOrders(numberOfCreatedOrders);
       } catch (error) {
         console.error(error);
@@ -87,7 +86,25 @@ function App() {
     getNumberOfCreatedOrders();
   }, [contract]);
 
-  
+  async function fetchOrderDetailsById(e) {
+    e.preventDefault();
+    if (!contract) return;
+    if (numberOfCreatedOrders == 0) {
+      alert("Order Is Not created");
+      return;
+    }
+    const orderId = BigInt(inputOrderIdRef.current.value);
+    if (!orderId) return;
+    try {
+      const orderDetails = await contract.getCreatedOrderById(orderId);
+      console.log(orderDetails);
+
+      setOrderDetails(orderDetails);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
     <>
       <button onClick={connectWallet}>Connect Wallet</button>
@@ -107,14 +124,25 @@ function App() {
         <button type="submit">Buy Tokens From MarketPlace</button>
       </form>
 
-      <form onSubmit={getCreatedOrderById}>
+      <br />
+
+      <form onSubmit={fetchOrderDetailsById}>
         <input
           ref={inputOrderIdRef}
           type="number"
           placeholder="Enter Order Id"
         />
-        <button type="submit">Get Created Order By Id</button>
+        <button type="submit">Fetch Order details By Id</button>
       </form>
+
+      {orderDetails && (
+        <div>
+          <h3>Order Details for Id: {inputOrderIdRef}</h3>
+          <p>Seller: {orderDetails[1]}</p>
+          <p>Number Of Tokens To Sell: {orderDetails[2]}</p>
+          <p>Is Order Active: {orderDetails[3]}</p>
+        </div>
+      )}
     </>
   );
 }
