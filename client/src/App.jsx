@@ -6,6 +6,7 @@ function App() {
   const [address, setAddress] = useState("");
   const [contract, setContract] = useState("");
   const [tokenPrice, setTokenPrice] = useState("");
+  const [tokenPriceInWei, setTokenPriceInWei] = useState(0n);
   const inputTokenRef = useRef(null);
 
   async function connectWallet() {
@@ -16,7 +17,7 @@ function App() {
         method: "eth_requestAccounts",
       });
 
-      const contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+      const contractAddress = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
@@ -32,18 +33,41 @@ function App() {
     async function getTokenPriceInEth() {
       const tokenPriceInWei = await contract.getTokenPrice();
       const tokenPriceInEth = ethers.formatEther(tokenPriceInWei);
+      setTokenPriceInWei(tokenPriceInWei);
       setTokenPrice(tokenPriceInEth);
     }
     getTokenPriceInEth();
   }, [contract]);
 
+  useEffect(() => {
+    async function getAvailableMarketplaceTokens() {
+      if (!contract) return;
+      try {
+        const availableTokens = await contract.getAvailableMarketplaceTokens();
+        console.log("Available Tokens:", availableTokens);
+      } catch (error) {
+        console.error(error);
+        alert(error);
+      }
+    }
+    getAvailableMarketplaceTokens();
+  }, [contract]);
+
   async function buyTokensFromMarketplace(e) {
     e.preventDefault();
-    const numberOfTokens = inputTokenRef.current.value;
-    console.log(numberOfTokens);
-    const amount = numberOfTokens * tokenPrice;
-    await contract.buyTokensFromMarketplace(numberOfTokens, { value: amount });
-    alert("Tx Successful");
+    if (!contract || tokenPriceInWei === 0n) return;
+    try {
+      const numberOfTokens = BigInt(inputTokenRef.current.value);
+      const amount = numberOfTokens * tokenPriceInWei;
+      const tx = await contract.buyTokensFromMarketplace(numberOfTokens, {
+        value: amount,
+      });
+      await tx.wait();
+      alert("Tx Successful");
+    } catch (error) {
+      console.error(error);
+      alert(error.shortMessage || error.reason || "Transaction Failed");
+    }
   }
 
   return (
