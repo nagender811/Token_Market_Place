@@ -7,7 +7,10 @@ function App() {
   const [contract, setContract] = useState("");
   const [tokenPrice, setTokenPrice] = useState("");
   const [tokenPriceInWei, setTokenPriceInWei] = useState(0n);
+  const [numberOfCreatedOrders, setNumberOfCreatedOrders] = useState("");
+  const [orderDetails, setOrderDetails] = useState("");
   const inputTokenRef = useRef(null);
+  const inputOrderIdRef = useRef(null);
 
   async function connectWallet() {
     if (!window.ethereum) {
@@ -17,7 +20,7 @@ function App() {
         method: "eth_requestAccounts",
       });
 
-      const contractAddress = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
+      const contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
@@ -70,15 +73,47 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    async function getNumberOfCreatedOrders() {
+      if (!contract) return;
+      try {
+        const numberOfCreatedOrders = await contract.getNumberOfCreatedOrders();
+        console.log("Number of Created Orders: ", numberOfCreatedOrders);
+        setNumberOfCreatedOrders(numberOfCreatedOrders);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    getNumberOfCreatedOrders();
+  }, [contract]);
+
+  
   return (
     <>
       <button onClick={connectWallet}>Connect Wallet</button>
       <p>Connected Address: {address}</p>
       <p>Token Price(In Eth): {tokenPrice}</p>
 
+      <p>Number Of Created Orders: {numberOfCreatedOrders}</p>
+
       <form onSubmit={buyTokensFromMarketplace}>
-        <input ref={inputTokenRef} placeholder="number of tokens"></input>
+        <input
+          ref={inputTokenRef}
+          type="number"
+          min="1"
+          step="1"
+          placeholder="number of tokens"
+        />
         <button type="submit">Buy Tokens From MarketPlace</button>
+      </form>
+
+      <form onSubmit={getCreatedOrderById}>
+        <input
+          ref={inputOrderIdRef}
+          type="number"
+          placeholder="Enter Order Id"
+        />
+        <button type="submit">Get Created Order By Id</button>
       </form>
     </>
   );
