@@ -8,7 +8,7 @@ function App() {
   const [tokenPrice, setTokenPrice] = useState("");
   const [tokenPriceInWei, setTokenPriceInWei] = useState(0n);
   const [numberOfCreatedOrders, setNumberOfCreatedOrders] = useState("");
-  const [orderDetails, setOrderDetails] = useState("");
+  const [orderDetails, setOrderDetails] = useState(null);
   const inputTokenRef = useRef(null);
   const inputOrderIdRef = useRef(null);
 
@@ -93,8 +93,12 @@ function App() {
       alert("Order Is Not created");
       return;
     }
-    const orderId = BigInt(inputOrderIdRef.current.value);
-    if (!orderId) return;
+    const value = BigInt(inputOrderIdRef.current.value);
+    if (!value) {
+      alert("Please enter an Order ID");
+      return;
+    }
+    orderId = BigInt(value);
     try {
       const orderDetails = await contract.getCreatedOrderById(orderId);
       console.log(orderDetails);
@@ -137,10 +141,10 @@ function App() {
 
       {orderDetails && (
         <div>
-          <h3>Order Details for Id: {inputOrderIdRef}</h3>
-          <p>Seller: {orderDetails[1]}</p>
-          <p>Number Of Tokens To Sell: {orderDetails[2]}</p>
-          <p>Is Order Active: {orderDetails[3]}</p>
+          <h3>Order Details for Id: {inputOrderIdRef.current.value}</h3>
+          <p>Seller: {orderDetails[1].toString()}</p>
+          <p>Number Of Tokens To Sell: {orderDetails[2].toString()}</p>
+          <p>Is Order Active: {orderDetails[3].toString()}</p>
         </div>
       )}
     </>
