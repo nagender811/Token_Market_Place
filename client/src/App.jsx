@@ -10,8 +10,11 @@ function App() {
   const [numberOfCreatedOrders, setNumberOfCreatedOrders] = useState("");
   const [orderDetails, setOrderDetails] = useState(null);
   const [orderList, setOrderList] = useState([]);
+  const [allowance, setAllowance] = useState(0);
   const inputTokenRef = useRef(null);
   const inputOrderIdRef = useRef(null);
+  const approveTokenRef = useRef(null);
+  const sellOrderRef = useRef(null);
 
   async function connectWallet() {
     if (!window.ethereum) {
@@ -125,6 +128,46 @@ function App() {
     }
   }
 
+  async function approveTokens(e) {
+    e.preventDefault();
+    if (!contract) return;
+    try {
+      const numberOfTokens = approveTokenRef.current.value;
+
+      if (!numberOfTokens || Number(numberOfTokens) <= 0) {
+        alert("Please Enter a valid number of tokens.");
+        return;
+      }
+
+      const tx = await contract.approve(
+        "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+        BigInt(numberOfTokens),
+      );
+
+      await tx.wait();
+
+      alert("Tokens approved successfully!");
+
+      approveTokenRef.current.value = "";
+
+      await getAllowance();
+    } catch (error) {
+      console.error(error);
+      alert(error.reason || error.message);
+    }
+  }
+
+  const getAllowance = async () => {
+    if (!contract) return;
+    try {
+      const value = await contract.allowance(address, "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512");
+
+      setAllowance(value.toString());
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <>
       <button onClick={connectWallet}>Connect Wallet</button>
@@ -176,6 +219,21 @@ function App() {
             <p>Active: {order.isActive ? "Yes" : "No"}</p>
           </div>
         ))}
+
+      <br />
+
+      <form onSubmit={approveTokens}>
+        <input
+          type="number"
+          ref={approveTokenRef}
+          placeholder="Number of tokens to approve"
+          min="1"
+        />
+
+        <button type="submit">Approve Tokens</button>
+      </form>
+      <br />
+      <p>Approved Tokens: {allowance}</p>
     </>
   );
 }
