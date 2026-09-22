@@ -9,6 +9,7 @@ function App() {
   const [tokenPriceInWei, setTokenPriceInWei] = useState(0n);
   const [numberOfCreatedOrders, setNumberOfCreatedOrders] = useState("");
   const [orderDetails, setOrderDetails] = useState(null);
+  const [orderList, setOrderList] = useState([]);
   const inputTokenRef = useRef(null);
   const inputOrderIdRef = useRef(null);
 
@@ -109,6 +110,21 @@ function App() {
     }
   }
 
+  async function fetchAllOrders() {
+    if (!contract) return;
+    if (numberOfCreatedOrders == 0) {
+      alert("Order Is Not created");
+      return;
+    }
+    try {
+      const orderList = await contract.getAllOrder();
+      console.log(orderList);
+      setOrderList(orderList);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
     <>
       <button onClick={connectWallet}>Connect Wallet</button>
@@ -144,9 +160,22 @@ function App() {
           <h3>Order Details for Id: {inputOrderIdRef.current.value}</h3>
           <p>Seller: {orderDetails[1].toString()}</p>
           <p>Number Of Tokens To Sell: {orderDetails[2].toString()}</p>
-          <p>Is Order Active: {orderDetails[3].toString()}</p>
+          <p>Is Order Active: {orderDetails[3] ? "Yes" : "No"}</p>
         </div>
       )}
+
+      <br />
+
+      <button onClick={fetchAllOrders}>Fetch All Orders</button>
+      {orderList &&
+        orderList.map((order) => (
+          <div key={order.orderId}>
+            <h3>Order ID: {order.orderId.toString()}</h3>
+            <p>Seller: {order.seller}</p>
+            <p>Tokens: {order.numberOfTokensToSell.toString()}</p>
+            <p>Active: {order.isActive ? "Yes" : "No"}</p>
+          </div>
+        ))}
     </>
   );
 }
