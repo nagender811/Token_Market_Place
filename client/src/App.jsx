@@ -160,9 +160,43 @@ function App() {
   const getAllowance = async () => {
     if (!contract) return;
     try {
-      const value = await contract.allowance(address, "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512");
+      const value = await contract.allowance(
+        address,
+        "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      );
 
       setAllowance(value.toString());
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const createSellOrder = async () => {
+    if (!contract) return;
+
+    const numberOfTokensToSell = sellOrderRef.current.value;
+    if (!numberOfTokensToSell || Number(numberOfTokensToSell) <= 0) {
+      alert("Please Enter a valid number of tokens.");
+      return;
+    }
+
+    const amount = ethers.parseUnits(numberOfTokensToSell, 18);
+
+    const approvedAmount = await tokenContract.allowance(
+      address,
+      contractAddress,
+    );
+
+    if (amount > approvedAmount) {
+      alert("Please approve enough tokens before creating a sell order.");
+      return;
+    }
+
+    try {
+      const tx = await contract.createSellOrder(numberOfTokensToSell);
+      tx.wait();
+      alert("Sell Order Created Successfully");
+      sellOrderRef.current.value = "";
     } catch (error) {
       console.error(error);
     }
@@ -232,8 +266,22 @@ function App() {
 
         <button type="submit">Approve Tokens</button>
       </form>
+
       <br />
+
       <p>Approved Tokens: {allowance}</p>
+
+      <br />
+
+      <form onSubmit={createSellOrder}>
+        <input
+          ref={sellOrderRef}
+          type="number"
+          placeholder="Number of tokens to sell"
+          min="1"
+        />
+        <button type="submit">Create Sell Order</button>
+      </form>
     </>
   );
 }
